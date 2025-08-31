@@ -96,6 +96,8 @@ export default function Dashboard() {
     setTeams(["Team Alpha", "Team Beta", "Team Gamma"]);
     setLeaders(["Alice Brown", "David Wilson", "Lisa Martinez"]);
   }, []);
+  //add sales modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Check if all required filters are selected
   const canLoadData = () => {
@@ -589,7 +591,7 @@ export default function Dashboard() {
           {activeTab === "agent" && (
             <div>
               {/* Filters */}
-              <div className="grid md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow mb-6">
+              <div className="grid md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
                 <div>
                   <label className="text-sm font-semibold">Province</label>
                   <select
@@ -645,7 +647,67 @@ export default function Dashboard() {
                 >
                   Apply Filters
                 </button>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center bg-purple-700 text-white hover:bg-purple-800 ml-auto cursor-pointer`}
+                >
+                  + Add Sale
+                </button>
               </div>
+              {/* Modal */}
+              {isModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 text-black">
+                  <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+                    <h2 className="text-xl font-semibold mb-4">Add Sale</h2>
+                    {/* Form */}
+                    <form className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium">
+                          Customer Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium">
+                          Amount
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-black">
+                          Date
+                        </label>
+                        <input
+                          type="date"
+                          className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        />
+                      </div>
+                      {/* Buttons */}
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setIsModalOpen(false)}
+                          className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-2 rounded-lg bg-purple-700 text-white hover:bg-purple-800"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
 
               {/* Dashboard content to export */}
               {dataLoaded && (
@@ -804,7 +866,7 @@ export default function Dashboard() {
           {activeTab === "team" && (
             <div>
               {/* Filters */}
-              <div className="grid md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow mb-6">
+              <div className="grid md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
                 <div>
                   <label className="text-sm font-semibold">Team Leader</label>
                   <select
