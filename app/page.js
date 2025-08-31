@@ -22,12 +22,6 @@ export default function Home() {
           >
             How It Works
           </a>
-          <a
-            href="#success-stories"
-            className="hover:text-purple-200 transition-colors"
-          >
-            Success Stories
-          </a>
           <button
             onClick={() => setShowLogin(true)}
             className="text-purple-300 hover:text-white transition-colors"
@@ -69,27 +63,33 @@ export default function Home() {
             </button>
           </div>
           <p className="text-sm text-gray-600 mt-4">
-            * Average partners earn $2,000-$8,000 monthly after 3 months
+            * Average partners earn R2,000-R8,000 monthly after 3 months
           </p>
         </div>
         <div className="mt-10 md:mt-0">
-          <div className="bg-white p-8 rounded-xl shadow-xl">
-            <h3 className="text-xl font-bold text-purple-800 mb-4">
-              Quick Stats
+          <div className="bg-white p-8 rounded-xl shadow-xl max-w-sm">
+            <h3 className="text-xl font-bold text-purple-800 mb-6 text-center">
+              Meet the CEO
             </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Active Partners:</span>
-                <span className="font-bold text-purple-700">2,847</span>
+            <div className="text-center">
+              <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-200 to-purple-300 flex items-center justify-center shadow-lg">
+                <svg
+                  className="w-20 h-20 text-purple-600"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Avg. Monthly Earnings:</span>
-                <span className="font-bold text-green-600">$4,200</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Projects Completed:</span>
-                <span className="font-bold text-purple-700">15,000+</span>
-              </div>
+              <h4 className="font-bold text-lg text-purple-700 mb-2">
+                Christian du Preez
+              </h4>
+              <p className="text-purple-600 text-sm mb-3">Founder & CEO</p>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                "I built this company to create real opportunities for ambitious
+                people. Our partners don't just earn commissions - they build
+                careers."
+              </p>
             </div>
           </div>
         </div>
@@ -163,8 +163,8 @@ export default function Home() {
                 High-Value Commissions
               </h4>
               <p className="text-gray-600">
-                Earn 20% on projects ranging from $5,000 to $50,000. Average
-                commission per sale: $2,400
+                Earn 20% on projects ranging from R1,000 to R50,000. Average
+                commission per sale: R2,400
               </p>
             </div>
             <div className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
@@ -191,63 +191,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Success Stories */}
-      <section id="success-stories" className="px-10 py-16 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h3 className="text-4xl font-bold text-purple-800 mb-12 text-center">
-            Success Stories
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="p-8 bg-purple-50 rounded-xl">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-purple-700">MK</span>
-                </div>
-                <div className="ml-4">
-                  <h4 className="font-semibold text-purple-700">Maria K.</h4>
-                  <p className="text-sm text-gray-600">Partner since 2023</p>
-                </div>
-              </div>
-              <p className="text-gray-700 mb-4">
-                "I started with zero sales experience. After the training, I
-                made my first sale within 10 days. Last month I earned $12,400
-                in commissions!"
-              </p>
-              <div className="text-sm text-purple-600 font-semibold">
-                Monthly avg: $8,200 | Total earned: $98,400
-              </div>
-            </div>
-            <div className="p-8 bg-purple-50 rounded-xl">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-purple-700">DJ</span>
-                </div>
-                <div className="ml-4">
-                  <h4 className="font-semibold text-purple-700">David J.</h4>
-                  <p className="text-sm text-gray-600">Partner since 2022</p>
-                </div>
-              </div>
-              <p className="text-gray-700 mb-4">
-                "The support system is incredible. I have a dedicated mentor and
-                the sales materials make closing deals so much easier. This
-                changed my financial future."
-              </p>
-              <div className="text-sm text-purple-600 font-semibold">
-                Monthly avg: $11,800 | Total earned: $189,600
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FAQ */}
-      <section className="px-10 py-16 bg-gray-50">
+      <section className="px-10 py-16 bg-white">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-4xl font-bold text-purple-800 mb-12 text-center">
             Frequently Asked Questions
           </h3>
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
               <h4 className="font-semibold text-lg text-purple-700 mb-2">
                 Do I need technical experience?
               </h4>
@@ -257,7 +208,7 @@ export default function Home() {
                 clients effectively.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
               <h4 className="font-semibold text-lg text-purple-700 mb-2">
                 How quickly can I start earning?
               </h4>
@@ -267,7 +218,7 @@ export default function Home() {
                 weeks.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
               <h4 className="font-semibold text-lg text-purple-700 mb-2">
                 What support do you provide?
               </h4>
@@ -288,8 +239,7 @@ export default function Home() {
             Ready to Start Your Success Story?
           </h3>
           <p className="text-xl mb-8 opacity-90">
-            Join 2,847+ partners who are building their financial freedom with
-            us
+            Join our partners who are building their financial freedom with us
           </p>
           <a
             href="/signup"
@@ -304,75 +254,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-purple-900 text-white py-8">
-        <div className="max-w-6xl mx-auto px-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h4 className="font-bold text-lg mb-4">DevPartner</h4>
-              <p className="text-purple-200 text-sm">
-                Connecting skilled sales professionals with high-value
-                development opportunities.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="text-purple-200 hover:text-white">
-                    Partner Agreement
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-purple-200 hover:text-white">
-                    Training Program
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-purple-200 hover:text-white">
-                    Success Stories
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="text-purple-200 hover:text-white">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-purple-200 hover:text-white">
-                    Contact Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-purple-200 hover:text-white">
-                    Partner Portal
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <p className="text-purple-200 text-sm">
-                support@devpartner.com
-                <br />
-                1-800-DEV-PARTNER
-                <br />
-                Mon-Fri 8AM-8PM EST
-              </p>
-            </div>
-          </div>
-          <div className="border-t border-purple-700 mt-8 pt-6 text-center text-purple-200 text-sm">
-            &copy; {new Date().getFullYear()} DevPartner. All rights reserved.
-          </div>
-        </div>
-      </footer>
-
-      {/* Improved Modal */}
+      {/* Login Modal */}
       {showLogin && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop with blur effect */}
