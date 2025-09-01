@@ -7,8 +7,8 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-700 to-purple-800 text-white px-6 py-4 flex justify-between items-center shadow-lg">
-        <h1 className="text-2xl font-bold">SuperbSite</h1>
+      <header className="bg-gradient-to-r from-purple-400 to-purple-800 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+        <img src="/logo.webp" alt="SuperbSite Logo" className="h-10 w-50 b" />
         <nav className="space-x-6 flex items-center">
           <a
             href="#features"

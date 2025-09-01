@@ -2,8 +2,12 @@ export default function SignUp() {
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-purple-700 text-white py-8 px-6">
-        <h1 className="text-3xl font-bold">Sales Agent Sign-Up</h1>
+      <div className="bg-gradient-to-r from-purple-400 to-purple-800 text-white py-3 px-6 w-full text-center p-5 border-b border-gray-300 bg-[#995da8]">
+        <a href="/">
+          <img src="/logo.webp" alt="SuperbSite Logo" className="h-10 w-50 b" />
+        </a>
+
+        <h1 className="text-4xl font-bold">Sales Agent Sign-Up</h1>
       </div>
 
       {/* Content */}

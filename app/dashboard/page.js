@@ -584,7 +584,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50">
+      <header className="w-full bg-gradient-to-r from-purple-400 to-purple-800 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+        <a href="/">
+          <img src="/logo.webp" alt="SuperbSite Logo" className="h-10 w-50 b" />
+        </a>
+      </header>
+      <div className="my-6"></div>
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-gray-800 to-purple-700 text-white p-8 text-center">
