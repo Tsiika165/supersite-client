@@ -43,6 +43,7 @@ export default function Home() {
           <h2 className="text-5xl font-bold text-purple-800 mb-6 leading-tight">
             Earn 20% Commission Selling Web Development Services
           </h2>
+
           <p className="text-lg text-gray-700 mb-8 leading-relaxed">
             Partner with us to sell professional web development, e-commerce,
             and digital solutions. Get comprehensive training, ongoing support,
@@ -65,6 +66,13 @@ export default function Home() {
           <p className="text-sm text-gray-600 mt-4">
             * Average partners earn R2,000-R8,000 monthly after 3 months
           </p>
+        </div>
+        <div>
+          <img
+            src="/commission.webp"
+            alt="SuperbSite Logo"
+            className="h-70 w-70 b"
+          />
         </div>
         <div className="mt-10 md:mt-0">
           <div className="bg-white p-8 rounded-xl shadow-xl max-w-sm">
