@@ -271,7 +271,7 @@ export default function Home() {
             {/* Close button */}
             <button
               onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-light"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-light cursor-pointer"
             >
               ×
             </button>
@@ -293,7 +293,7 @@ export default function Home() {
                 <input
                   type="email"
                   placeholder="your.email@example.com"
-                  className="w-full border border-gray-300 p-4 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-gray-500 p-4 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-700"
                 />
               </div>
 
@@ -312,7 +312,7 @@ export default function Home() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
                   />
                   <span className="ml-2 text-sm text-gray-600">
                     Remember me

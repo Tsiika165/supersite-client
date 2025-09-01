@@ -7,7 +7,7 @@ export default function SignUp() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto w-full p-6 space-y-6 bg-white shadow rounded-lg mt-6">
+      <div className="max-w-4xl mx-auto w-full p-6 space-y-6 bg-white shadow rounded-lg mt-6 text-black">
         <p>
           Become a member of our sales team and unlock a world of unlimited
           earning potential! With our competitive commission structure (20% on

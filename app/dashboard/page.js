@@ -54,7 +54,47 @@ export default function Dashboard() {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState("agent");
-
+  //mock data for sales
+  const mySales = [
+    {
+      customer: "Alice Smith",
+      date: "2025-01-05",
+      amount: "R 1,200",
+      commission: "R 60",
+      status: "Paid",
+    },
+    {
+      customer: "Bob Johnson",
+      date: "2025-01-12",
+      amount: "R 2,500",
+      commission: "R 125",
+      status: "Pending",
+    },
+    {
+      customer: "Carol White",
+      date: "2025-02-01",
+      amount: "R 900",
+      commission: "R 45",
+      status: "Paid",
+    },
+    {
+      customer: "David Brown",
+      date: "2025-02-10",
+      amount: "R 3,400",
+      commission: "R 170",
+      status: "Paid",
+    },
+  ];
+  const agentSalesHistory = [
+    { month: "Jan", sales: 4 },
+    { month: "Feb", sales: 2 },
+    { month: "Mar", sales: 3 },
+    { month: "Apr", sales: 5 },
+  ];
+  const commissionBreakdown = [
+    { type: "Paid", value: 295 },
+    { type: "Pending", value: 125 },
+  ];
   // Filters
   const [province, setProvince] = useState("");
   const [period, setPeriod] = useState("");
@@ -590,63 +630,129 @@ export default function Dashboard() {
           {/* Agent Portal Content */}
           {activeTab === "agent" && (
             <div>
-              {/* Filters */}
-              <div className="grid md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
-                <div>
-                  <label className="text-sm font-semibold">Province</label>
-                  <select
-                    value={province}
-                    onChange={(e) => setProvince(e.target.value)}
-                    className="w-full p-2 border rounded-lg mt-1"
-                  >
-                    <option value="">Select Province</option>
-                    {provinces.map((prov) => (
-                      <option key={prov}>{prov}</option>
-                    ))}
-                  </select>
+              <div ref={dashboardRef}>
+                {/* Metrics */}
+                <div className="grid md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">{metrics.totalSales}</p>
+                    <p>Total Sales</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">
+                      {metrics.totalCommission}
+                    </p>
+                    <p>Total Commission</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">
+                      {metrics.completedSales}
+                    </p>
+                    <p>Completed Sales</p>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="text-sm font-semibold">Period</label>
-                  <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                    className="w-full p-2 border rounded-lg mt-1"
+                {/* Charts */}
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div
+                    ref={barChartRef}
+                    className="bg-white p-6 rounded-xl shadow"
                   >
-                    <option value="">Select Period</option>
-                    {periods.map((per) => (
-                      <option key={per}>{per}</option>
-                    ))}
-                  </select>
+                    <h2 className="text-lg font-semibold mb-4 text-black">
+                      📈 Sales Over Time
+                    </h2>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={agentSalesHistory}>
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="sales" fill="#863E98" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div
+                    ref={pieChartRef}
+                    className="bg-white p-6 rounded-xl shadow"
+                  >
+                    <h2 className="text-lg font-semibold mb-4 text-black">
+                      💰 Commission Breakdown
+                    </h2>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={commissionBreakdown}
+                          dataKey="value"
+                          nameKey="type"
+                          outerRadius={100}
+                          label
+                        >
+                          {commissionBreakdown.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Legend />
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="text-sm font-semibold">Team</label>
-                  <select
-                    value={team}
-                    onChange={(e) => setTeam(e.target.value)}
-                    className="w-full p-2 border rounded-lg mt-1"
-                  >
-                    <option value="">Select Team</option>
-                    {teams.map((t) => (
-                      <option key={t}>{t}</option>
-                    ))}
-                  </select>
+                {/* Sales Table */}
+                <div className="bg-white p-6 rounded-xl shadow mb-6 text-black">
+                  <h2 className="text-lg font-semibold mb-4">
+                    🎯 My Sales History
+                  </h2>
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-3 text-left">Customer</th>
+                        <th className="p-3 text-left">Date</th>
+                        <th className="p-3 text-left">Amount</th>
+                        <th className="p-3 text-left">Commission</th>
+                        <th className="p-3 text-left">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mySales.map((s, i) => (
+                        <tr key={i} className="border-b hover:bg-gray-50">
+                          <td className="p-3">{s.customer}</td>
+                          <td className="p-3">{s.date}</td>
+                          <td className="p-3">{s.amount}</td>
+                          <td className="p-3">{s.commission}</td>
+                          <td className="p-3">
+                            <span
+                              className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                s.status === "Paid"
+                                  ? "bg-green-100 text-green-700"
+                                  : s.status === "Pending"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {s.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Download Button */}
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      onClick={downloadPDF}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                      </svg>
+                      Download My Report
+                    </button>
+                  </div>
                 </div>
               </div>
-
               <div className="flex space-x-4 mb-6">
-                <button
-                  onClick={applyFilters}
-                  className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center ${
-                    canLoadData()
-                      ? "bg-purple-700 text-white hover:bg-purple-800"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                  disabled={!canLoadData()}
-                >
-                  Apply Filters
-                </button>
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center bg-purple-700 text-white hover:bg-purple-800 ml-auto cursor-pointer`}
@@ -654,407 +760,402 @@ export default function Dashboard() {
                   + Add Sale
                 </button>
               </div>
-              {/* Modal */}
-              {isModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 text-black">
-                  <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-                    <h2 className="text-xl font-semibold mb-4">Add Sale</h2>
-                    {/* Form */}
-                    <form className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium">
-                          Customer Name
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium">
-                          Amount
-                        </label>
-                        <input
-                          type="number"
-                          className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-black">
-                          Date
-                        </label>
-                        <input
-                          type="date"
-                          className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                        />
-                      </div>
-                      {/* Buttons */}
-                      <div className="flex justify-end space-x-3">
-                        <button
-                          type="button"
-                          onClick={() => setIsModalOpen(false)}
-                          className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 rounded-lg bg-purple-700 text-white hover:bg-purple-800"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
-
-              {/* Dashboard content to export */}
-              {dataLoaded && (
-                <div ref={dashboardRef}>
-                  {/* Metrics */}
-                  <div className="grid md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">{metrics.totalSales}</p>
-                      <p>Total Sales</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {metrics.totalCommission}
-                      </p>
-                      <p>Total Commission</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {metrics.activeAgents}
-                      </p>
-                      <p>Active Agents</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {metrics.completedSales}
-                      </p>
-                      <p>Completed Sales</p>
-                    </div>
-                  </div>
-
-                  {/* Charts */}
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div
-                      ref={barChartRef}
-                      className="bg-white p-6 rounded-xl shadow"
-                    >
-                      <h2 className="text-lg font-semibold mb-4">
-                        🏆 Best Sales by Team
-                      </h2>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={teamPerformance}>
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="value" fill="#863E98" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    <div
-                      ref={pieChartRef}
-                      className="bg-white p-6 rounded-xl shadow"
-                    >
-                      <h2 className="text-lg font-semibold mb-4">
-                        📍 Sales by Province
-                      </h2>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                          <Pie
-                            data={provinceDistribution}
-                            dataKey="value"
-                            nameKey="name"
-                            outerRadius={100}
-                            label
-                          >
-                            {provinceDistribution.map((_, index) => (
-                              <Cell
-                                key={index}
-                                fill={COLORS[index % COLORS.length]}
-                              />
-                            ))}
-                          </Pie>
-                          <Legend />
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Table */}
-                  <div className="bg-white p-6 rounded-xl shadow mb-6">
-                    <h2 className="text-lg font-semibold mb-4">
-                      🎯 Individual Agent Performance
-                    </h2>
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="p-3 text-left">Agent</th>
-                          <th className="p-3 text-left">Team</th>
-                          <th className="p-3 text-left">Sales Count</th>
-                          <th className="p-3 text-left">Sales Value</th>
-                          <th className="p-3 text-left">Commission</th>
-                          <th className="p-3 text-left">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {agents.map((a, i) => (
-                          <tr key={i} className="border-b hover:bg-gray-50">
-                            <td className="p-3">{a.name}</td>
-                            <td className="p-3">{a.team}</td>
-                            <td className="p-3">{a.salesCount}</td>
-                            <td className="p-3">{a.salesValue}</td>
-                            <td className="p-3">{a.commission}</td>
-                            <td className="p-3">
-                              <span
-                                className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                  a.status === "Paid"
-                                    ? "bg-green-100 text-green-700"
-                                    : a.status === "Pending"
-                                    ? "bg-yellow-100 text-yellow-700"
-                                    : "bg-blue-100 text-blue-700"
-                                }`}
-                              >
-                                {a.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                        {agents.length === 0 && (
-                          <tr>
-                            <td
-                              colSpan="6"
-                              className="text-center p-4 text-gray-500"
-                            >
-                              No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-
-                    {/* Download Button at the bottom of the table */}
-                    <div className="mt-6 flex justify-center">
-                      <button
-                        onClick={downloadPDF}
-                        className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center"
-                      >
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                        </svg>
-                        Download Agent Report
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* Team Portal Content */}
-          {activeTab === "team" && (
-            <div>
-              {/* Filters */}
-              <div className="grid md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
-                <div>
-                  <label className="text-sm font-semibold">Team Leader</label>
-                  <select
-                    value={leader}
-                    onChange={(e) => setLeader(e.target.value)}
-                    className="w-full p-2 border rounded-lg mt-1"
-                  >
-                    <option value="">Select Leader</option>
-                    {leaders.map((l) => (
-                      <option key={l}>{l}</option>
-                    ))}
-                  </select>
-                </div>
+          {/* Modal */}
+          {isModalOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 text-black">
+              <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+                <h2 className="text-xl font-semibold mb-4">Add Sale</h2>
+                {/* Form */}
+                <form className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Amount</label>
+                    <input
+                      type="number"
+                      className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-black">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    />
+                  </div>
+                  {/* Buttons */}
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-lg bg-purple-700 text-white hover:bg-purple-800"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
-                <div>
-                  <label className="text-sm font-semibold">
-                    Performance Period
-                  </label>
-                  <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                    className="w-full p-2 border rounded-lg mt-1"
-                  >
-                    <option value="">Select Period</option>
-                    {periods.map((per) => (
-                      <option key={per}>{per}</option>
-                    ))}
-                  </select>
+          {/* Dashboard content to export */}
+          {dataLoaded && (
+            <div ref={dashboardRef}>
+              {/* Metrics */}
+              <div className="grid md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
+                  <p className="text-2xl font-bold">{metrics.totalSales}</p>
+                  <p>Total Sales</p>
+                </div>
+                <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
+                  <p className="text-2xl font-bold">
+                    {metrics.totalCommission}
+                  </p>
+                  <p>Total Commission</p>
+                </div>
+                <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
+                  <p className="text-2xl font-bold">{metrics.activeAgents}</p>
+                  <p>Active Agents</p>
+                </div>
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
+                  <p className="text-2xl font-bold">{metrics.completedSales}</p>
+                  <p>Completed Sales</p>
                 </div>
               </div>
 
-              <div className="flex space-x-4 mb-6">
-                <button
-                  onClick={applyFilters}
-                  className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center ${
-                    canLoadData()
-                      ? "bg-purple-700 text-white hover:bg-purple-800"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                  disabled={!canLoadData()}
+              {/* Charts */}
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div
+                  ref={barChartRef}
+                  className="bg-white p-6 rounded-xl shadow"
                 >
-                  Apply Filters
-                </button>
+                  <h2 className="text-lg font-semibold mb-4">
+                    🏆 Best Sales by Team
+                  </h2>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={teamPerformance}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#863E98" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div
+                  ref={pieChartRef}
+                  className="bg-white p-6 rounded-xl shadow"
+                >
+                  <h2 className="text-lg font-semibold mb-4">
+                    📍 Sales by Province
+                  </h2>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={provinceDistribution}
+                        dataKey="value"
+                        nameKey="name"
+                        outerRadius={100}
+                        label
+                      >
+                        {provinceDistribution.map((_, index) => (
+                          <Cell
+                            key={index}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Legend />
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
-              {/* Dashboard content to export */}
-              {dataLoaded && (
-                <div ref={dashboardRef}>
-                  {/* Metrics */}
-                  <div className="grid md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {teamMetrics.activeTeams}
-                      </p>
-                      <p>Active Teams</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {teamMetrics.leaderCommission}
-                      </p>
-                      <p>Leader Commission</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {teamMetrics.targetAchievement}
-                      </p>
-                      <p>Target Achievement</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
-                      <p className="text-2xl font-bold">
-                        {teamMetrics.teamSales}
-                      </p>
-                      <p>Team Sales</p>
-                    </div>
-                  </div>
-
-                  {/* Charts */}
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div
-                      ref={barChartRef}
-                      className="bg-white p-6 rounded-xl shadow"
-                    >
-                      <h2 className="text-lg font-semibold mb-4">
-                        📈 Team Performance Comparison
-                      </h2>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={teamPerformance}>
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="value" fill="#863E98" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    <div
-                      ref={pieChartRef}
-                      className="bg-white p-6 rounded-xl shadow"
-                    >
-                      <h2 className="text-lg font-semibold mb-4">
-                        💰 Commission Distribution
-                      </h2>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                          <Pie
-                            data={commissionDistribution}
-                            dataKey="value"
-                            nameKey="name"
-                            outerRadius={100}
-                            label
+              {/* Table */}
+              <div className="bg-white p-6 rounded-xl shadow mb-6 text-black  ">
+                <h2 className="text-lg font-semibold mb-4">
+                  🎯 Individual Agent Performance
+                </h2>
+                <table className="w-full border-collapse text-black">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="p-3 text-left">Agent</th>
+                      <th className="p-3 text-left">Team</th>
+                      <th className="p-3 text-left">Sales Count</th>
+                      <th className="p-3 text-left">Sales Value</th>
+                      <th className="p-3 text-left">Commission</th>
+                      <th className="p-3 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agents.map((a, i) => (
+                      <tr key={i} className="border-b hover:bg-gray-50">
+                        <td className="p-3">{a.name}</td>
+                        <td className="p-3">{a.team}</td>
+                        <td className="p-3">{a.salesCount}</td>
+                        <td className="p-3">{a.salesValue}</td>
+                        <td className="p-3">{a.commission}</td>
+                        <td className="p-3">
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              a.status === "Paid"
+                                ? "bg-green-100 text-green-700"
+                                : a.status === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-blue-100 text-blue-700"
+                            }`}
                           >
-                            {commissionDistribution.map((_, index) => (
-                              <Cell
-                                key={index}
-                                fill={COLORS[index % COLORS.length]}
-                              />
-                            ))}
-                          </Pie>
-                          <Legend />
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Table */}
-                  <div className="bg-white p-6 rounded-xl shadow mb-6">
-                    <h2 className="text-lg font-semibold mb-4">
-                      👥 Team Leader Performance
-                    </h2>
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="p-3 text-left">Team Leader</th>
-                          <th className="p-3 text-left">Team Name</th>
-                          <th className="p-3 text-left">Team Size</th>
-                          <th className="p-3 text-left">Team Sales</th>
-                          <th className="p-3 text-left">Leader Commission</th>
-                          <th className="p-3 text-left">Team Ranking</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {teamLeaders.map((leader, i) => (
-                          <tr key={i} className="border-b hover:bg-gray-50">
-                            <td className="p-3">{leader.name}</td>
-                            <td className="p-3">{leader.teamName}</td>
-                            <td className="p-3">{leader.teamSize}</td>
-                            <td className="p-3">{leader.teamSales}</td>
-                            <td className="p-3">{leader.leaderCommission}</td>
-                            <td className="p-3">{leader.ranking}</td>
-                          </tr>
-                        ))}
-                        {teamLeaders.length === 0 && (
-                          <tr>
-                            <td
-                              colSpan="6"
-                              className="text-center p-4 text-gray-500"
-                            >
-                              No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-
-                    {/* Download Button at the bottom of the table */}
-                    <div className="mt-6 flex justify-center">
-                      <button
-                        onClick={downloadPDF}
-                        className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center"
-                      >
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
+                            {a.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {agents.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan="6"
+                          className="text-center p-4 text-gray-500"
                         >
-                          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                        </svg>
-                        Download Team Report
-                      </button>
-                    </div>
-                  </div>
+                          No data available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+
+                {/* Download Button at the bottom of the table */}
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={downloadPDF}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center"
+                  >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                    </svg>
+                    Download Agent Report
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>
+
+        {/* Team Portal Content */}
+        {activeTab === "team" && (
+          <div>
+            {/* Filters */}
+            <div className="grid md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
+              <div>
+                <label className="text-sm font-semibold">Team Leader</label>
+                <select
+                  value={leader}
+                  onChange={(e) => setLeader(e.target.value)}
+                  className="w-full p-2 border rounded-lg mt-1"
+                >
+                  <option value="">Select Leader</option>
+                  {leaders.map((l) => (
+                    <option key={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold">
+                  Performance Period
+                </label>
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                  className="w-full p-2 border rounded-lg mt-1"
+                >
+                  <option value="">Select Period</option>
+                  {periods.map((per) => (
+                    <option key={per}>{per}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex space-x-4 mb-6">
+              <button
+                onClick={applyFilters}
+                className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center ${
+                  canLoadData()
+                    ? "bg-purple-700 text-white hover:bg-purple-800"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+                disabled={!canLoadData()}
+              >
+                Apply Filters
+              </button>
+            </div>
+
+            {/* Dashboard content to export */}
+            {dataLoaded && (
+              <div ref={dashboardRef}>
+                {/* Metrics */}
+                <div className="grid md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">
+                      {teamMetrics.activeTeams}
+                    </p>
+                    <p>Active Teams</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">
+                      {teamMetrics.leaderCommission}
+                    </p>
+                    <p>Leader Commission</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">
+                      {teamMetrics.targetAchievement}
+                    </p>
+                    <p>Target Achievement</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">
+                      {teamMetrics.teamSales}
+                    </p>
+                    <p>Team Sales</p>
+                  </div>
+                </div>
+
+                {/* Charts */}
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div
+                    ref={barChartRef}
+                    className="bg-white p-6 rounded-xl shadow"
+                  >
+                    <h2 className="text-lg font-semibold mb-4">
+                      📈 Team Performance Comparison
+                    </h2>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={teamPerformance}>
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#863E98" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div
+                    ref={pieChartRef}
+                    className="bg-white p-6 rounded-xl shadow"
+                  >
+                    <h2 className="text-lg font-semibold mb-4">
+                      💰 Commission Distribution
+                    </h2>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={commissionDistribution}
+                          dataKey="value"
+                          nameKey="name"
+                          outerRadius={100}
+                          label
+                        >
+                          {commissionDistribution.map((_, index) => (
+                            <Cell
+                              key={index}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Legend />
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="bg-white p-6 rounded-xl shadow mb-6">
+                  <h2 className="text-lg font-semibold mb-4">
+                    👥 Team Leader Performance
+                  </h2>
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-3 text-left">Team Leader</th>
+                        <th className="p-3 text-left">Team Name</th>
+                        <th className="p-3 text-left">Team Size</th>
+                        <th className="p-3 text-left">Team Sales</th>
+                        <th className="p-3 text-left">Leader Commission</th>
+                        <th className="p-3 text-left">Team Ranking</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {teamLeaders.map((leader, i) => (
+                        <tr key={i} className="border-b hover:bg-gray-50">
+                          <td className="p-3">{leader.name}</td>
+                          <td className="p-3">{leader.teamName}</td>
+                          <td className="p-3">{leader.teamSize}</td>
+                          <td className="p-3">{leader.teamSales}</td>
+                          <td className="p-3">{leader.leaderCommission}</td>
+                          <td className="p-3">{leader.ranking}</td>
+                        </tr>
+                      ))}
+                      {teamLeaders.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan="6"
+                            className="text-center p-4 text-gray-500"
+                          >
+                            No data available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+
+                  {/* Download Button at the bottom of the table */}
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      onClick={downloadPDF}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                      </svg>
+                      Download Team Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
