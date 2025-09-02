@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios, { AxiosError } from "axios";
 
 export default function SignUp() {
   const [role, setRole] = useState("Agent");
@@ -23,6 +24,13 @@ export default function SignUp() {
   // Secret PINs (in a real app, these would be securely stored and validated server-side)
   const ADMIN_PIN = "1234"; // Example admin PIN
   const LEADER_PIN = "5678"; // Example team leader PIN
+  const [data, setData] = useState({
+    role: role,
+    email: email,
+    password: password,
+    name: `${firstName} ${lastName}`,
+  });
+  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,10 +63,11 @@ export default function SignUp() {
         return;
       }
     }
+    //NEEEEEEED TO CONNECT TO API AND PUSH TO DASHBAORD!!!!!!
 
     try {
       // Send data to your API endpoint
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("http://localhost:3000/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,11 +93,7 @@ export default function SignUp() {
       }
 
       // ✅ FIXED REDIRECT - Pass role and firstName to success page
-      router.push(
-        `/signup-success?role=${encodeURIComponent(
-          role
-        )}&firstName=${encodeURIComponent(firstName)}`
-      );
+      router.push("/dahsboard");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -142,6 +147,13 @@ export default function SignUp() {
               <option value="Team Leader">Team Leader</option>
               <option value="Admin">Admin</option>
             </select>
+            <p className="text-sm text-gray-500 mt-1">
+              {role === "Agent" &&
+                "Start as a sales agent and earn commissions"}
+              {role === "Team Leader" &&
+                "Lead a team and earn additional bonuses"}
+              {role === "Admin" && "Full system access and management"}
+            </p>
           </div>
 
           {/* Admin PIN Field (only shown for Admin role) */}
@@ -307,9 +319,46 @@ export default function SignUp() {
             disabled={isLoading}
             className="w-full bg-purple-700 text-white py-2 rounded font-semibold hover:bg-purple-800 transition-colors disabled:opacity-50"
           >
-            {isLoading ? "Registering..." : "Register"}
+            {isLoading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Registering...
+              </>
+            ) : (
+              "Complete Registration"
+            )}
           </button>
         </form>
+        <div className="text-center pt-4 border-t">
+          <p className="text-gray-600">
+            Already have an account?{" "}
+            <a
+              href="/login"
+              className="text-purple-600 hover:text-purple-800 font-semibold underline"
+            >
+              Sign in here
+            </a>
+          </p>
+        </div>
       </div>
     </main>
   );

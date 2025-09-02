@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import {
   PieChart,
   Pie,
@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import router from "next/router";
 
 // South African provinces
 const provinces = [

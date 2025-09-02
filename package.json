@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "db:init": "node scripts/initDB.js",
+    "db:indexes": "node scripts/setupIndexes.js",
+    "db:reset": "node scripts/resetDB.js"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
+    "firebase": "^12.2.1",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.2",
@@ -17,6 +22,7 @@
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.0",
     "next": "15.5.2",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "recharts": "^3.1.2"
@@ -26,6 +32,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "module-alias": "^2.2.3",
     "tailwindcss": "^4"
   }
 }

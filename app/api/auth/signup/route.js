@@ -1,123 +1,128 @@
-import clientPromise from "@/lib/mongodb";
+import { connectToMongoDB } from "@/lib/mongodb";
+import User from "@/model/user";
 import { hash } from "bcryptjs";
 
-export async function POST(request) {
-  console.log("✅ Signup API called!");
-
+export async function POST(req) {
   try {
-    const {
-      email,
-      username,
-      password,
-      name,
-      role,
-      adminPin,
-      leaderPin,
-      mobileNumber,
-      province,
-    } = await request.json();
-    console.log("Received signup data:", { email, username, name, role });
+    await connectToMongoDB();
 
-    // Validate input
-    if (!email || !username || !password || !name) {
+    const body = await req.json();
+    const { firstName, lastName, email, password, role } = body;
+    console.log("Received role:", role, "Type:", typeof role); // Add this for debugging
+    console.log("Raw body:", body); // Debug the entire request body
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password) {
       return new Response(
         JSON.stringify({
-          error: "Email, username, password, and name are required",
+          message:
+            "Missing required fields: firstName, lastName, email, password",
         }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
       );
     }
 
-    // Determine role and approval based on pins
-    let userRole = "partner";
-    let isApproved = false;
-
-    if (adminPin === "1234") {
-      // Your frontend ADMIN_PIN
-      userRole = "admin";
-      isApproved = true;
-    } else if (leaderPin === "5678") {
-      // Your frontend LEADER_PIN
-      userRole = "team_leader";
-      isApproved = true;
-    } else if (role === "Agent") {
-      userRole = "partner";
-      isApproved = false;
-    } else if (role === "Team Leader") {
-      userRole = "team_leader";
-      isApproved = true;
-    } else if (role === "Admin") {
-      userRole = "admin";
-      isApproved = true;
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(JSON.stringify({ message: "Invalid email format" }), {
+        status: 422,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db("supersite_db");
-
     // Check if user already exists
-    const existingUser = await db.collection("users").findOne({
-      $or: [
-        { email: email.toLowerCase().trim() },
-        { username: username.trim() },
-      ],
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return new Response(
+        JSON.stringify({ message: "User with this email already exists" }),
+        {
+          status: 409, // 409 Conflict is more appropriate for duplicate resources
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return new Response(
+        JSON.stringify({ message: "Password must be at least 6 characters" }),
+        { status: 422, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Hash password and create user
+    const hashedPassword = await hash(password, 12);
+    const allowedRoles = ["Agent", "Admin", "Team Leader"];
+    let userRole = "Agent"; // default
+
+    if (role) {
+      // Convert to proper case for consistency
+      const formattedRole =
+        role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+      userRole = allowedRoles.includes(formattedRole) ? formattedRole : "Agent";
+    }
+
+    const newUser = await User.create({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      role: userRole,
     });
 
-    if (existingUser) {
+    // Return user data without password
+    const user = {
+      id: newUser._id,
+      email: newUser.email,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      role: newUser.role,
+    };
+
+    return new Response(
+      JSON.stringify({
+        message: "User created successfully",
+        user,
+      }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (err) {
+    console.error("Signup error:", err);
+
+    // Handle MongoDB duplicate key error (additional safety net)
+    if (err.code === 11000) {
       return new Response(
-        JSON.stringify({
-          error:
-            existingUser.email === email.toLowerCase()
-              ? "Email already registered"
-              : "Username already taken",
-        }),
+        JSON.stringify({ message: "User with this email already exists" }),
         { status: 409, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Hash password
-    const hashedPassword = await hash(password, 12);
-
-    // Create user
-    const newUser = {
-      email: email.toLowerCase().trim(),
-      username: username.trim(),
-      password: hashedPassword,
-      name: name.trim(),
-      role: userRole,
-      isApproved: isApproved,
-      mobileNumber: mobileNumber || "",
-      province: province || "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // Save to database
-    const result = await db.collection("users").insertOne(newUser);
-
-    console.log(
-      "✅ User created with ID:",
-      result.insertedId,
-      "Role:",
-      userRole
-    );
-
-    // Return success (without password)
-    const { password: _, ...userWithoutPassword } = newUser;
+    // Handle mongoose validation errors
+    if (err.name === "ValidationError") {
+      const errors = Object.values(err.errors).map((error) => error.message);
+      return new Response(
+        JSON.stringify({ message: "Validation failed", errors }),
+        { status: 422, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
       JSON.stringify({
-        message: "Signup successful!",
-        user: userWithoutPassword,
-        userId: result.insertedId,
+        message: "Internal server error",
+        // Only include stack in development
+        ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
       }),
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
     );
-  } catch (error) {
-    console.error("Signup error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
   }
 }
