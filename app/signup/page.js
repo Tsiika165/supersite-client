@@ -1,39 +1,99 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
   const [role, setRole] = useState("Agent");
   const [adminPin, setAdminPin] = useState("");
   const [leaderPin, setLeaderPin] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [province, setProvince] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   // Secret PINs (in a real app, these would be securely stored and validated server-side)
   const ADMIN_PIN = "1234"; // Example admin PIN
   const LEADER_PIN = "5678"; // Example team leader PIN
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    // Basic validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
 
     // Validate PINs if needed
     if (role === "Admin" && adminPin !== ADMIN_PIN) {
-      alert("Invalid Admin PIN");
+      setError("Invalid Admin PIN");
+      setIsLoading(false);
       return;
     }
 
     if (role === "Team Leader") {
       if (leaderPin !== LEADER_PIN) {
-        alert("Invalid Team Leader PIN");
+        setError("Invalid Team Leader PIN");
+        setIsLoading(false);
         return;
       }
       if (!teamName.trim()) {
-        alert("Please enter a team name");
+        setError("Please enter a team name");
+        setIsLoading(false);
         return;
       }
     }
 
-    // Form submission logic would go here
-    alert("Registration successful!");
+    try {
+      // Send data to your API endpoint
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name: `${firstName} ${lastName}`,
+          username,
+          role,
+          mobileNumber,
+          province,
+          team: role === "Team Leader" ? teamName : null,
+          adminPin: role === "Admin" ? adminPin : null,
+          leaderPin: role === "Team Leader" ? leaderPin : null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      // ✅ FIXED REDIRECT - Pass role and firstName to success page
+      router.push(
+        `/signup-success?role=${encodeURIComponent(
+          role
+        )}&firstName=${encodeURIComponent(firstName)}`
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,6 +109,12 @@ export default function SignUp() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto w-full p-6 space-y-6 bg-white shadow rounded-lg mt-6 text-black">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
+
         <p>
           Become a member of our sales team and unlock a world of unlimited
           earning potential! With our competitive commission structure (20% on
@@ -137,6 +203,8 @@ export default function SignUp() {
             <label className="block mb-1 font-medium">Email Address *</label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="user@gmail.com"
               className="w-full border rounded p-2"
               required
@@ -145,13 +213,20 @@ export default function SignUp() {
 
           <div>
             <label className="block mb-1 font-medium">Username</label>
-            <input type="text" className="w-full border rounded p-2" />
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border rounded p-2"
+            />
           </div>
 
           <div>
             <label className="block mb-1 font-medium">Password *</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full border rounded p-2"
               required
             />
@@ -161,6 +236,8 @@ export default function SignUp() {
             <label className="block mb-1 font-medium">Confirm Password *</label>
             <input
               type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full border rounded p-2"
               required
             />
@@ -171,6 +248,8 @@ export default function SignUp() {
               <label className="block mb-1 font-medium">First Name *</label>
               <input
                 type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 className="w-full border rounded p-2"
                 required
               />
@@ -179,6 +258,8 @@ export default function SignUp() {
               <label className="block mb-1 font-medium">Last Name *</label>
               <input
                 type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 className="w-full border rounded p-2"
                 required
               />
@@ -187,12 +268,23 @@ export default function SignUp() {
 
           <div>
             <label className="block mb-1 font-medium">Mobile Number *</label>
-            <input type="text" className="w-full border rounded p-2" required />
+            <input
+              type="text"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              className="w-full border rounded p-2"
+              required
+            />
           </div>
 
           <div>
             <label className="block mb-1 font-medium">Province *</label>
-            <select className="w-full border rounded p-2" required>
+            <select
+              value={province}
+              onChange={(e) => setProvince(e.target.value)}
+              className="w-full border rounded p-2"
+              required
+            >
               <option value="">Select Province</option>
               <option>Eastern Cape</option>
               <option>Western Cape</option>
@@ -212,9 +304,10 @@ export default function SignUp() {
 
           <button
             type="submit"
-            className="w-full bg-purple-700 text-white py-2 rounded font-semibold hover:bg-purple-800 transition-colors"
+            disabled={isLoading}
+            className="w-full bg-purple-700 text-white py-2 rounded font-semibold hover:bg-purple-800 transition-colors disabled:opacity-50"
           >
-            Register
+            {isLoading ? "Registering..." : "Register"}
           </button>
         </form>
       </div>

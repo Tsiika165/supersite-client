@@ -1,8 +1,49 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const router = useRouter();
+
+  // Login function
+  const handleLogin = async (emailOrUsername, password) => {
+    try {
+      setIsLoggingIn(true);
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          emailOrUsername: emailOrUsername.trim(),
+          password: password.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Login failed. Please check your credentials."
+        );
+      }
+
+      // ✅ Login successful! Redirect immediately
+      router.push("/dashboard");
+      // No need to setShowLogin(false) as we're redirecting
+
+      return { success: true, user: data.user };
+    } catch (error) {
+      console.error("Login error:", error);
+      setIsLoggingIn(false);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -267,7 +308,7 @@ export default function Home() {
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop with blur effect */}
           <div
-            onClick={() => setShowLogin(false)}
+            onClick={() => !isLoggingIn && setShowLogin(false)}
             className="fixed inset-0 bg-white/20 backdrop-blur-sm"
           ></div>
 
@@ -278,8 +319,9 @@ export default function Home() {
           >
             {/* Close button */}
             <button
-              onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-light cursor-pointer"
+              onClick={() => !isLoggingIn && setShowLogin(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-light cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoggingIn}
             >
               ×
             </button>
@@ -296,23 +338,28 @@ export default function Home() {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
+                  Email or Username *
                 </label>
                 <input
-                  type="email"
-                  placeholder="your.email@example.com"
-                  className="w-full border border-gray-500 p-4 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-700"
+                  type="text"
+                  placeholder="Enter your email or username"
+                  className="w-full border border-gray-500 p-4 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoggingIn}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  You can use either your email address or username
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
+                  Password *
                 </label>
                 <input
                   type="password"
                   placeholder="Enter your password"
-                  className="w-full border border-gray-300 p-4 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-gray-300 p-4 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoggingIn}
                 />
               </div>
 
@@ -320,7 +367,8 @@ export default function Home() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoggingIn}
                   />
                   <span className="ml-2 text-sm text-gray-600">
                     Remember me
@@ -328,21 +376,67 @@ export default function Home() {
                 </label>
                 <a
                   href="#"
-                  className="text-sm text-purple-600 hover:text-purple-500"
+                  className="text-sm text-purple-600 hover:text-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Forgot password?
                 </a>
               </div>
 
               <button
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault();
-                  // Handle login logic here
-                  alert("Login functionality would be implemented here");
+
+                  // Get input values
+                  const emailInput =
+                    document.querySelector('input[type="text"]');
+                  const passwordInput = document.querySelector(
+                    'input[type="password"]'
+                  );
+
+                  if (!emailInput.value || !passwordInput.value) {
+                    alert("Please enter both email/username and password");
+                    return;
+                  }
+
+                  const result = await handleLogin(
+                    emailInput.value,
+                    passwordInput.value
+                  );
+
+                  if (!result.success) {
+                    alert(result.error);
+                  }
                 }}
-                className="w-full bg-purple-700 text-white py-4 rounded-lg hover:bg-purple-800 font-semibold transition-colors"
+                className="w-full bg-purple-700 text-white py-4 rounded-lg hover:bg-purple-800 font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={isLoggingIn}
               >
-                Sign In to Dashboard
+                {isLoggingIn ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Logging in...
+                  </>
+                ) : (
+                  "Login"
+                )}
               </button>
             </div>
 
