@@ -4,6 +4,26 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 
+export const routes = [
+  {
+    path: "/",
+    element: <Login />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />, // optional: can auto-redirect based on role
+    children: [
+      { path: "admin", element: <AdminDash /> },
+      { path: "teamlead", element: <TeamLeadDash /> },
+      { path: "agent", element: <AgentDash /> },
+    ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />, // catch-all fallback
+  },
+];
+
 export default function SignUp() {
   const [role, setRole] = useState("Agent");
   const [adminPin, setAdminPin] = useState("");
@@ -75,7 +95,8 @@ export default function SignUp() {
         body: JSON.stringify({
           email,
           password,
-          name: `${firstName} ${lastName}`,
+          firstName,
+          lastName,
           username,
           role,
           mobileNumber,
@@ -93,7 +114,7 @@ export default function SignUp() {
       }
 
       // ✅ FIXED REDIRECT - Pass role and firstName to success page
-      router.push("/dahsboard");
+      router.push("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {
