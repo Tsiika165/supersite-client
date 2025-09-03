@@ -4,26 +4,6 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 
-export const routes = [
-  {
-    path: "/",
-    element: <Login />,
-  },
-  {
-    path: "/dashboard",
-    element: <Dashboard />, // optional: can auto-redirect based on role
-    children: [
-      { path: "admin", element: <AdminDash /> },
-      { path: "teamlead", element: <TeamLeadDash /> },
-      { path: "agent", element: <AgentDash /> },
-    ],
-  },
-  {
-    path: "*",
-    element: <Navigate to="/" replace />, // catch-all fallback
-  },
-];
-
 export default function SignUp() {
   const [role, setRole] = useState("Agent");
   const [adminPin, setAdminPin] = useState("");
