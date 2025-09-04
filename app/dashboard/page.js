@@ -66,28 +66,28 @@ export default function Dashboard() {
       customer: "Alice Smith",
       date: "2025-01-05",
       amount: "R 1,200",
-      commission: "R 60",
+      commission: "R 240",
       status: "Paid",
     },
     {
       customer: "Bob Johnson",
       date: "2025-01-12",
       amount: "R 2,500",
-      commission: "R 125",
+      commission: "R 500",
       status: "Pending",
     },
     {
       customer: "Carol White",
       date: "2025-02-01",
       amount: "R 900",
-      commission: "R 45",
+      commission: "R 180",
       status: "Paid",
     },
     {
       customer: "David Brown",
       date: "2025-02-10",
       amount: "R 3,400",
-      commission: "R 170",
+      commission: "R 680",
       status: "Paid",
     },
   ]);
@@ -120,7 +120,7 @@ export default function Dashboard() {
   // Data for Agent Portal
   const [metrics, setMetrics] = useState({
     totalSales: "R 8,000",
-    totalCommission: "R 400",
+    totalCommission: "R 1600",
     activeAgents: 3,
     completedSales: 3,
   });
@@ -282,7 +282,7 @@ export default function Dashboard() {
       date: formData.get("date"),
       amount: `R ${parseFloat(formData.get("amount")).toLocaleString()}`,
       commission: `R ${(
-        parseFloat(formData.get("amount")) * 0.05
+        parseFloat(formData.get("amount")) * 0.2
       ).toLocaleString()}`,
       status: "Pending",
     };
@@ -662,9 +662,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="w-full bg-gradient-to-r from-purple-400 to-purple-800 text-white px-6 py-4 flex justify-between items-center shadow-lg">
         <a href="/">
-          <div className="h-10 w-40 bg-white rounded-md flex items-center justify-center">
-            <span className="text-purple-800 font-bold text-xl">LOGO</span>
-          </div>
+          <a href="/">
+            <img
+              src="/logo.webp"
+              alt="SuperbSite Logo"
+              className="h-10 w-50 mx-auto"
+            />
+          </a>
         </a>
       </header>
       <div className="my-6"></div>
@@ -989,7 +993,7 @@ export default function Dashboard() {
                   {reportType === "Agent Report" ? (
                     <>
                       {/* Agent Report Content */}
-                      <div className="grid md:grid-cols-4 gap-4 mb-6">
+                      <div className="grid md:grid-cols-4 gap-4 mb-6 text-black">
                         <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
                           <p className="text-2xl font-bold">
                             {metrics.totalSales}
@@ -1023,7 +1027,7 @@ export default function Dashboard() {
                           className="bg-white p-6 rounded-xl shadow"
                           style={{ backgroundColor: "#ffffff" }}
                         >
-                          <h2 className="text-lg font-semibold mb-4">
+                          <h2 className="text-lg font-semibold mb-4 text-black">
                             🏆 Best Sales by Team
                           </h2>
                           <ResponsiveContainer width="100%" height={250}>
@@ -1040,7 +1044,7 @@ export default function Dashboard() {
                           className="bg-white p-6 rounded-xl shadow"
                           style={{ backgroundColor: "#ffffff" }}
                         >
-                          <h2 className="text-lg font-semibold mb-4">
+                          <h2 className="text-lg font-semibold mb-4 text-black">
                             📍 Sales by Province
                           </h2>
                           <ResponsiveContainer width="100%" height={250}>
@@ -1068,7 +1072,7 @@ export default function Dashboard() {
 
                       {/* Table */}
                       <div className="bg-white p-6 rounded-xl shadow mb-6 text-black">
-                        <h2 className="text-lg font-semibold mb-4">
+                        <h2 className="text-lg font-semibold mb-4 text-black">
                           🎯 Individual Agent Performance
                         </h2>
                         <table className="w-full border-collapse text-black">
@@ -1156,7 +1160,7 @@ export default function Dashboard() {
                           className="bg-white p-6 rounded-xl shadow"
                           style={{ backgroundColor: "#ffffff" }}
                         >
-                          <h2 className="text-lg font-semibold mb-4">
+                          <h2 className="text-lg font-semibold mb-4 text-black">
                             📈 Team Performance Comparison
                             <span className="text-xs block text-gray-500 mt-1">
                               (Performance Score %)
@@ -1176,7 +1180,7 @@ export default function Dashboard() {
                           className="bg-white p-6 rounded-xl shadow"
                           style={{ backgroundColor: "#ffffff" }}
                         >
-                          <h2 className="text-lg font-semibold mb-4">
+                          <h2 className="text-lg font-semibold mb-4 text-black">
                             💰 Commission Distribution
                             <span className="text-xs block text-gray-500 mt-1">
                               (% of Total Commission)
@@ -1206,7 +1210,7 @@ export default function Dashboard() {
                       </div>
 
                       {/* Table */}
-                      <div className="bg-white p-6 rounded-xl shadow mb-6">
+                      <div className="bg-white p-6 rounded-xl shadow mb-6 text-black">
                         <h2 className="text-lg font-semibold mb-4">
                           👥 Team Leader Performance
                         </h2>
