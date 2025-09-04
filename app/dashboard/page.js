@@ -16,7 +16,7 @@ import {
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-// South African provinces
+// South African provinces (used in Team Portal)
 const provinces = [
   "Gauteng",
   "Western Cape",
@@ -29,7 +29,7 @@ const provinces = [
   "Northern Cape",
 ];
 
-// Periods
+// Periods (used in Team Portal)
 const periods = [
   "Today",
   "Yesterday",
@@ -45,6 +45,9 @@ const periods = [
   "Custom Range",
 ];
 
+// Report types for Team Portal
+const reportTypes = ["Agent Report", "Team Report"];
+
 const COLORS = ["#863E98", "#e74c3c", "#f39c12", "#2ecc71", "#3498db"];
 
 export default function Dashboard() {
@@ -54,8 +57,11 @@ export default function Dashboard() {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState("agent");
-  //mock data for sales
-  const mySales = [
+  // Report type for Team Portal
+  const [reportType, setReportType] = useState("Agent Report");
+
+  // Mock data for sales
+  const [mySales, setMySales] = useState([
     {
       customer: "Alice Smith",
       date: "2025-01-05",
@@ -84,71 +90,88 @@ export default function Dashboard() {
       commission: "R 170",
       status: "Paid",
     },
-  ];
+  ]);
+
   const agentSalesHistory = [
     { month: "Jan", sales: 4 },
     { month: "Feb", sales: 2 },
     { month: "Mar", sales: 3 },
     { month: "Apr", sales: 5 },
   ];
+
   const commissionBreakdown = [
     { type: "Paid", value: 295 },
     { type: "Pending", value: 125 },
   ];
-  // Filters
+
+  // Filters (only used in Team Portal)
   const [province, setProvince] = useState("");
   const [period, setPeriod] = useState("");
   const [team, setTeam] = useState("");
   const [leader, setLeader] = useState("");
 
   // Data loaded state
-  const [dataLoaded, setDataLoaded] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(true); // Default to true for Agent Portal
 
-  // Dynamic filters (from DB later)
+  // Dynamic filters for Team Portal
   const [teams, setTeams] = useState([]);
   const [leaders, setLeaders] = useState([]);
 
-  // Data
+  // Data for Agent Portal
   const [metrics, setMetrics] = useState({
-    totalSales: "R 0",
-    totalCommission: "R 0",
-    activeAgents: 0,
-    completedSales: 0,
+    totalSales: "R 8,000",
+    totalCommission: "R 400",
+    activeAgents: 3,
+    completedSales: 3,
   });
 
+  // Data for Team Portal
   const [teamPerformance, setTeamPerformance] = useState([]);
   const [provinceDistribution, setProvinceDistribution] = useState([]);
   const [agents, setAgents] = useState([]);
-
-  // Team data
   const [teamMetrics, setTeamMetrics] = useState({
     activeTeams: 0,
     leaderCommission: "R 0",
     targetAchievement: "0%",
     teamSales: 0,
   });
-
   const [teamLeaders, setTeamLeaders] = useState([]);
   const [commissionDistribution, setCommissionDistribution] = useState([]);
 
-  // Load dummy teams/leaders
+  // Load dummy teams/leaders for Team Portal
   useEffect(() => {
     setTeams(["Team Alpha", "Team Beta", "Team Gamma"]);
     setLeaders(["Alice Brown", "David Wilson", "Lisa Martinez"]);
   }, []);
-  //add sales modal
+
+  // Auto-load data for Agent Portal when tab is switched
+  useEffect(() => {
+    if (activeTab === "agent") {
+      setDataLoaded(true);
+      setMetrics({
+        totalSales: "R 8,000",
+        totalCommission: "R 400",
+        activeAgents: 3,
+        completedSales: 3,
+      });
+    } else {
+      setDataLoaded(false); // Reset for Team Portal
+    }
+  }, [activeTab]);
+
+  // Add sales modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Check if all required filters are selected
+  // Check if all required filters are selected (only for Team Portal)
   const canLoadData = () => {
     if (activeTab === "agent") {
-      return province && period && team;
+      return true; // No filters required for Agent Portal
     } else {
       return leader && period;
     }
   };
 
-  // Apply Filters (dummy for now)
+  // Apply Filters for Team Portal
   const applyFilters = () => {
     if (!canLoadData()) {
       alert("Please select all filters first");
@@ -157,437 +180,491 @@ export default function Dashboard() {
 
     setDataLoaded(true);
 
-    setMetrics({
-      totalSales: "R 8.5M",
-      totalCommission: "R 645K",
-      activeAgents: 287,
-      completedSales: 234,
-    });
+    // Update metrics with filtered data for Team Portal
+    if (activeTab === "team") {
+      setTeamMetrics({
+        activeTeams: 3,
+        leaderCommission: "R 81,400",
+        targetAchievement: "85%",
+        teamSales: 58,
+      });
 
-    setTeamPerformance([
-      { name: "Alpha", value: 90 },
-      { name: "Beta", value: 75 },
-      { name: "Gamma", value: 60 },
-    ]);
+      setTeamLeaders([
+        {
+          name: "Alice Brown",
+          teamName: "Team Alpha",
+          teamSize: "12 agents",
+          teamSales: "R 890,000",
+          leaderCommission: "R 35,600",
+          ranking: "🥇 #1",
+        },
+        {
+          name: "David Wilson",
+          teamName: "Team Beta",
+          teamSize: "9 agents",
+          teamSales: "R 710,000",
+          leaderCommission: "R 28,400",
+          ranking: "🥈 #2",
+        },
+        {
+          name: "Lisa Martinez",
+          teamName: "Team Gamma",
+          teamSize: "11 agents",
+          teamSales: "R 685,000",
+          leaderCommission: "R 27,400",
+          ranking: "🥉 #3",
+        },
+      ]);
 
-    setProvinceDistribution([
-      { name: "Gauteng", value: 35 },
-      { name: "Western Cape", value: 25 },
-      { name: "KwaZulu-Natal", value: 20 },
-      { name: "Eastern Cape", value: 10 },
-      { name: "Other", value: 10 },
-    ]);
+      setCommissionDistribution([
+        { name: "Leader Bonus", value: 35 },
+        { name: "Team Bonus", value: 30 },
+        { name: "Individual", value: 25 },
+        { name: "Performance", value: 10 },
+      ]);
 
-    setAgents([
-      {
-        name: "Sarah Johnson",
-        team: "Team Alpha",
-        salesCount: 23,
-        salesValue: "R 450,000",
-        commission: "R 22,500",
-        status: "Paid",
-      },
-      {
-        name: "James Smith",
-        team: "Team Beta",
-        salesCount: 16,
-        salesValue: "R 320,000",
-        commission: "R 16,000",
-        status: "Pending",
-      },
-      {
-        name: "Michael Brown",
-        team: "Team Gamma",
-        salesCount: 19,
-        salesValue: "R 380,000",
-        commission: "R 19,000",
-        status: "Processing",
-      },
-      {
-        name: "Emily Wilson",
-        team: "Team Alpha",
-        salesCount: 27,
-        salesValue: "R 520,000",
-        commission: "R 26,000",
-        status: "Paid",
-      },
-      {
-        name: "David Lee",
-        team: "Team Beta",
-        salesCount: 14,
-        salesValue: "R 290,000",
-        commission: "R 14,500",
-        status: "Pending",
-      },
-    ]);
+      setTeamPerformance([
+        { name: "Alpha", value: 90 },
+        { name: "Beta", value: 75 },
+        { name: "Gamma", value: 60 },
+      ]);
 
-    setTeamMetrics({
-      activeTeams: 9,
-      leaderCommission: "R 285,600",
-      targetAchievement: "98%",
-      teamSales: 642,
-    });
+      setProvinceDistribution([
+        { name: "Gauteng", value: 35 },
+        { name: "Western Cape", value: 25 },
+        { name: "KwaZulu-Natal", value: 20 },
+        { name: "Eastern Cape", value: 10 },
+        { name: "Other", value: 10 },
+      ]);
 
-    setTeamLeaders([
-      {
-        name: "Alice Brown",
-        teamName: "Team Alpha",
-        teamSize: "12 agents",
-        teamSales: "R 890,000",
-        leaderCommission: "R 35,600",
-        ranking: "🥇 #1",
-      },
-      {
-        name: "David Wilson",
-        teamName: "Team Beta",
-        teamSize: "9 agents",
-        teamSales: "R 710,000",
-        leaderCommission: "R 28,400",
-        ranking: "🥈 #2",
-      },
-      {
-        name: "Lisa Martinez",
-        teamName: "Team Gamma",
-        teamSize: "11 agents",
-        teamSales: "R 685,000",
-        leaderCommission: "R 27,400",
-        ranking: "🥉 #3",
-      },
-    ]);
+      setAgents([
+        {
+          name: "Sarah Johnson",
+          team: "Team Alpha",
+          salesCount: 23,
+          salesValue: "R 450,000",
+          commission: "R 22,500",
+          status: "Paid",
+        },
+        {
+          name: "James Smith",
+          team: "Team Beta",
+          salesCount: 16,
+          salesValue: "R 320,000",
+          commission: "R 16,000",
+          status: "Pending",
+        },
+        {
+          name: "Michael Brown",
+          team: "Team Gamma",
+          salesCount: 19,
+          salesValue: "R 380,000",
+          commission: "R 19,000",
+          status: "Processing",
+        },
+      ]);
 
-    setCommissionDistribution([
-      { name: "Leader Bonus", value: 35 },
-      { name: "Team Bonus", value: 30 },
-      { name: "Individual", value: 25 },
-      { name: "Performance", value: 10 },
-    ]);
+      setMetrics({
+        totalSales: "R 8.5M",
+        totalCommission: "R 645K",
+        activeAgents: 287,
+        completedSales: 234,
+      });
+    }
+  };
+
+  // Handle form submission for adding a sale
+  const handleAddSale = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newSale = {
+      customer: formData.get("customer"),
+      date: formData.get("date"),
+      amount: `R ${parseFloat(formData.get("amount")).toLocaleString()}`,
+      commission: `R ${(
+        parseFloat(formData.get("amount")) * 0.05
+      ).toLocaleString()}`,
+      status: "Pending",
+    };
+    setMySales([...mySales, newSale]);
+    setIsModalOpen(false);
   };
 
   // Convert chart to image
   const chartToImage = async (chartRef, backgroundColor = "#ffffff") => {
-    if (!chartRef.current) return null;
+    if (!chartRef.current) {
+      console.warn("Chart reference is null");
+      return null;
+    }
+    try {
+      // Force a reflow to ensure the chart is properly rendered
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const canvas = await html2canvas(chartRef.current, {
-      backgroundColor,
-      scale: 2,
-    });
-    return canvas.toDataURL("image/png");
+      const canvas = await html2canvas(chartRef.current, {
+        backgroundColor,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Ensure charts are visible in the cloned document
+          const charts = clonedDoc.querySelectorAll(".recharts-wrapper");
+          charts.forEach((chart) => {
+            chart.style.opacity = 1;
+            chart.style.visibility = "visible";
+          });
+        },
+      });
+      return canvas.toDataURL("image/png");
+    } catch (error) {
+      console.error("Error capturing chart:", error);
+      return null;
+    }
   };
 
   // Download report as PDF
   const downloadPDF = async () => {
-    // Create PDF
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10;
-    const contentWidth = pageWidth - 2 * margin;
+    try {
+      // Create PDF in portrait mode
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10;
+      const contentWidth = pageWidth - 2 * margin;
 
-    // Add logo (placeholder)
-    pdf.setFillColor(60, 50, 100);
-    pdf.rect(margin, 10, 30, 10, "F");
-    pdf.setFontSize(10);
-    pdf.setTextColor(255, 255, 255);
-    pdf.text("COMPANY", margin + 5, 16);
+      // Add logo (placeholder)
+      pdf.setFillColor(60, 50, 100);
+      pdf.rect(margin, 10, 30, 10, "F");
+      pdf.setFontSize(10);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text("COMPANY", margin + 5, 16);
 
-    // Add header
-    pdf.setFontSize(16);
-    pdf.setTextColor(60, 50, 100);
-    pdf.text(
-      `${activeTab === "agent" ? "AGENT" : "TEAM"} PERFORMANCE REPORT`,
-      pageWidth / 2,
-      20,
-      { align: "center" }
-    );
-
-    // Add date
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text(
-      `Generated on: ${new Date().toLocaleDateString()}`,
-      pageWidth - margin,
-      15,
-      { align: "right" }
-    );
-
-    let yPosition = 30;
-
-    // Add filters section
-    pdf.setFontSize(12);
-    pdf.setTextColor(60, 50, 100);
-    pdf.text("FILTERS APPLIED:", margin, yPosition);
-    yPosition += 7;
-
-    pdf.setFontSize(10);
-    pdf.setTextColor(80, 80, 80);
-
-    if (activeTab === "agent") {
-      pdf.text(`Province: ${province || "All"}`, margin, yPosition);
-      yPosition += 5;
-      pdf.text(`Period: ${period || "All"}`, margin, yPosition);
-      yPosition += 5;
-      pdf.text(`Team: ${team || "All"}`, margin, yPosition);
-    } else {
-      pdf.text(`Leader: ${leader || "All"}`, margin, yPosition);
-      yPosition += 5;
-      pdf.text(`Period: ${period || "All"}`, margin, yPosition);
-    }
-
-    yPosition += 10;
-
-    // Add metrics section
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 5;
-
-    pdf.setFontSize(12);
-    pdf.setTextColor(60, 50, 100);
-    pdf.text("KEY METRICS:", margin, yPosition);
-    yPosition += 7;
-
-    pdf.setFontSize(10);
-    pdf.setTextColor(80, 80, 80);
-
-    if (activeTab === "agent") {
-      pdf.text(`Total Sales: ${metrics.totalSales}`, margin, yPosition);
-      yPosition += 5;
+      // Add header
+      pdf.setFontSize(16);
+      pdf.setTextColor(60, 50, 100);
       pdf.text(
-        `Total Commission: ${metrics.totalCommission}`,
-        margin,
-        yPosition
+        `${activeTab === "agent" ? "AGENT" : "TEAM"} PERFORMANCE REPORT`,
+        pageWidth / 2,
+        20,
+        { align: "center" }
       );
-      yPosition += 5;
-      pdf.text(`Active Agents: ${metrics.activeAgents}`, margin, yPosition);
-      yPosition += 5;
-      pdf.text(`Completed Sales: ${metrics.completedSales}`, margin, yPosition);
-    } else {
-      pdf.text(`Active Teams: ${teamMetrics.activeTeams}`, margin, yPosition);
-      yPosition += 5;
-      pdf.text(
-        `Leader Commission: ${teamMetrics.leaderCommission}`,
-        margin,
-        yPosition
-      );
-      yPosition += 5;
-      pdf.text(
-        `Target Achievement: ${teamMetrics.targetAchievement}`,
-        margin,
-        yPosition
-      );
-      yPosition += 5;
-      pdf.text(`Team Sales: ${teamMetrics.teamSales}`, margin, yPosition);
-    }
 
-    yPosition += 10;
-
-    // Convert charts to images
-    const barChartImg = await chartToImage(barChartRef);
-    const pieChartImg = await chartToImage(pieChartRef);
-
-    // Add charts section
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 5;
-
-    pdf.setFontSize(12);
-    pdf.setTextColor(60, 50, 100);
-    pdf.text("PERFORMANCE CHARTS:", margin, yPosition);
-    yPosition += 10;
-
-    // Add bar chart
-    if (barChartImg) {
-      pdf.addImage(
-        barChartImg,
-        "PNG",
-        margin,
-        yPosition,
-        contentWidth / 2 - 5,
-        80
-      );
-    }
-
-    // Add pie chart
-    if (pieChartImg) {
-      pdf.addImage(
-        pieChartImg,
-        "PNG",
-        margin + contentWidth / 2 + 5,
-        yPosition,
-        contentWidth / 2 - 5,
-        80
-      );
-    }
-
-    yPosition += 90;
-
-    // Check if we need a new page
-    if (yPosition > 250) {
-      pdf.addPage();
-      yPosition = margin;
-    }
-
-    // Add table section
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 5;
-
-    pdf.setFontSize(12);
-    pdf.setTextColor(60, 50, 100);
-    pdf.text(
-      `${activeTab === "agent" ? "AGENT" : "TEAM LEADER"} PERFORMANCE DATA:`,
-      margin,
-      yPosition
-    );
-    yPosition += 10;
-
-    // Add table headers
-    pdf.setFillColor(240, 240, 240);
-    pdf.rect(margin, yPosition, contentWidth, 8, "F");
-    pdf.setFontSize(10);
-    pdf.setTextColor(0, 0, 0);
-
-    let colWidths, headers;
-
-    if (activeTab === "agent") {
-      colWidths = [40, 40, 25, 30, 30, 25];
-      headers = [
-        "Agent",
-        "Team",
-        "Sales Count",
-        "Sales Value",
-        "Commission",
-        "Status",
-      ];
-    } else {
-      colWidths = [40, 40, 25, 30, 30, 25];
-      headers = [
-        "Leader",
-        "Team",
-        "Team Size",
-        "Team Sales",
-        "Commission",
-        "Ranking",
-      ];
-    }
-
-    let xPosition = margin;
-    headers.forEach((header, i) => {
-      pdf.text(header, xPosition + 2, yPosition + 5);
-      xPosition += colWidths[i];
-    });
-
-    yPosition += 8;
-
-    // Add table rows
-    pdf.setFontSize(9);
-    const data = activeTab === "agent" ? agents : teamLeaders;
-
-    data.forEach((item, index) => {
-      // Check if we need a new page
-      if (yPosition > 270) {
-        pdf.addPage();
-        yPosition = margin;
-
-        // Add table headers again
-        pdf.setFillColor(240, 240, 240);
-        pdf.rect(margin, yPosition, contentWidth, 8, "F");
-        pdf.setFontSize(10);
-
-        xPosition = margin;
-        headers.forEach((header, i) => {
-          pdf.text(header, xPosition + 2, yPosition + 5);
-          xPosition += colWidths[i];
-        });
-
-        yPosition += 8;
-      }
-
-      // Alternate row colors
-      if (index % 2 === 0) {
-        pdf.setFillColor(250, 250, 250);
-      } else {
-        pdf.setFillColor(255, 255, 255);
-      }
-
-      pdf.rect(margin, yPosition, contentWidth, 8, "F");
-
-      xPosition = margin;
-
-      if (activeTab === "agent") {
-        pdf.text(item.name.substring(0, 15), xPosition + 2, yPosition + 5);
-        xPosition += colWidths[0];
-
-        pdf.text(item.team, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[1];
-
-        pdf.text(item.salesCount.toString(), xPosition + 2, yPosition + 5);
-        xPosition += colWidths[2];
-
-        pdf.text(item.salesValue, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[3];
-
-        pdf.text(item.commission, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[4];
-
-        // Color code status
-        if (item.status === "Paid") {
-          pdf.setTextColor(0, 128, 0);
-        } else if (item.status === "Pending") {
-          pdf.setTextColor(200, 100, 0);
-        } else {
-          pdf.setTextColor(0, 0, 200);
-        }
-
-        pdf.text(item.status, xPosition + 2, yPosition + 5);
-      } else {
-        pdf.text(item.name.substring(0, 15), xPosition + 2, yPosition + 5);
-        xPosition += colWidths[0];
-
-        pdf.text(item.teamName, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[1];
-
-        pdf.text(item.teamSize, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[2];
-
-        pdf.text(item.teamSales, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[3];
-
-        pdf.text(item.leaderCommission, xPosition + 2, yPosition + 5);
-        xPosition += colWidths[4];
-
-        pdf.text(item.ranking, xPosition + 2, yPosition + 5);
-      }
-
-      pdf.setTextColor(0, 0, 0); // Reset color
-
-      yPosition += 8;
-    });
-
-    // Add footer
-    const totalPages = pdf.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(8);
+      // Add date
+      pdf.setFontSize(10);
       pdf.setTextColor(100, 100, 100);
-      pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, 290, {
-        align: "center",
-      });
       pdf.text(
-        "Confidential - For Internal Use Only",
+        `Generated on: ${new Date().toLocaleDateString()}`,
         pageWidth - margin,
-        290,
+        15,
         { align: "right" }
       );
-    }
 
-    // Save PDF
-    pdf.save(`${activeTab}-performance-report.pdf`);
+      let yPosition = 30;
+
+      // Add filters section (only for Team Portal)
+      if (activeTab === "team") {
+        pdf.setFontSize(12);
+        pdf.setTextColor(60, 50, 100);
+        pdf.text("FILTERS APPLIED:", margin, yPosition);
+        yPosition += 7;
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text(`Report Type: ${reportType || "All"}`, margin, yPosition);
+        yPosition += 5;
+        pdf.text(`Leader: ${leader || "All"}`, margin, yPosition);
+        yPosition += 5;
+        pdf.text(`Period: ${period || "All"}`, margin, yPosition);
+        yPosition += 10;
+      }
+
+      // Add metrics section
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 5;
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(60, 50, 100);
+      pdf.text("KEY METRICS:", margin, yPosition);
+      yPosition += 7;
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+
+      if (activeTab === "agent") {
+        pdf.text(`Total Sales: ${metrics.totalSales}`, margin, yPosition);
+        yPosition += 5;
+        pdf.text(
+          `Total Commission: ${metrics.totalCommission}`,
+          margin,
+          yPosition
+        );
+        yPosition += 5;
+        pdf.text(`Active Agents: ${metrics.activeAgents}`, margin, yPosition);
+        yPosition += 5;
+        pdf.text(
+          `Completed Sales: ${metrics.completedSales}`,
+          margin,
+          yPosition
+        );
+      } else {
+        pdf.text(`Active Teams: ${teamMetrics.activeTeams}`, margin, yPosition);
+        yPosition += 5;
+        pdf.text(
+          `Leader Commission: ${teamMetrics.leaderCommission}`,
+          margin,
+          yPosition
+        );
+        yPosition += 5;
+        pdf.text(
+          `Target Achievement: ${teamMetrics.targetAchievement}`,
+          margin,
+          yPosition
+        );
+        yPosition += 5;
+        pdf.text(`Team Sales: ${teamMetrics.teamSales}`, margin, yPosition);
+      }
+
+      yPosition += 10;
+
+      // Add charts section
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 5;
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(60, 50, 100);
+      pdf.text("PERFORMANCE CHARTS:", margin, yPosition);
+      yPosition += 10;
+
+      // Wait a moment for the charts to render properly
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Capture charts with a slight delay to ensure they're rendered
+      const barChartImg = await chartToImage(barChartRef, "#ffffff");
+      const pieChartImg = await chartToImage(pieChartRef, "#ffffff");
+
+      // Add charts if they were captured successfully
+      if (barChartImg) {
+        try {
+          pdf.addImage(
+            barChartImg,
+            "PNG",
+            margin,
+            yPosition,
+            contentWidth / 2 - 5,
+            80
+          );
+        } catch (error) {
+          console.error("Error adding bar chart to PDF:", error);
+        }
+      }
+
+      if (pieChartImg) {
+        try {
+          pdf.addImage(
+            pieChartImg,
+            "PNG",
+            margin + contentWidth / 2 + 5,
+            yPosition,
+            contentWidth / 2 - 5,
+            80
+          );
+        } catch (error) {
+          console.error("Error adding pie chart to PDF:", error);
+        }
+      }
+
+      yPosition += 90;
+
+      // Check for page overflow
+      if (yPosition > 250) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      // Add table section
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 5;
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(60, 50, 100);
+      pdf.text(
+        `${activeTab === "agent" ? "AGENT" : "TEAM LEADER"} PERFORMANCE DATA:`,
+        margin,
+        yPosition
+      );
+      yPosition += 10;
+
+      // Add table headers
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPosition, contentWidth, 8, "F");
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 0);
+
+      let colWidths, headers;
+      if (activeTab === "agent") {
+        colWidths = [40, 30, 30, 30, 30];
+        headers = ["Customer", "Date", "Amount", "Commission", "Status"];
+      } else {
+        colWidths =
+          reportType === "Agent Report"
+            ? [40, 40, 25, 30, 30, 25]
+            : [40, 40, 25, 30, 30, 25];
+        headers =
+          reportType === "Agent Report"
+            ? [
+                "Agent",
+                "Team",
+                "Sales Count",
+                "Sales Value",
+                "Commission",
+                "Status",
+              ]
+            : [
+                "Leader",
+                "Team",
+                "Team Size",
+                "Team Sales",
+                "Commission",
+                "Ranking",
+              ];
+      }
+
+      let xPosition = margin;
+      headers.forEach((header, i) => {
+        pdf.text(header, xPosition + 2, yPosition + 5);
+        xPosition += colWidths[i];
+      });
+
+      yPosition += 8;
+
+      // Add table rows
+      pdf.setFontSize(9);
+      const data =
+        activeTab === "agent"
+          ? mySales
+          : reportType === "Agent Report"
+          ? agents
+          : teamLeaders;
+
+      data.forEach((item, index) => {
+        // Check for page overflow
+        if (yPosition > 270) {
+          pdf.addPage();
+          yPosition = margin;
+
+          // Re-add table headers
+          pdf.setFillColor(240, 240, 240);
+          pdf.rect(margin, yPosition, contentWidth, 8, "F");
+          pdf.setFontSize(10);
+          xPosition = margin;
+          headers.forEach((header, i) => {
+            pdf.text(header, xPosition + 2, yPosition + 5);
+            xPosition += colWidths[i];
+          });
+          yPosition += 8;
+        }
+
+        // Alternate row colors
+        pdf.setFillColor(index % 2 === 0 ? 250 : 255, 250, 255);
+        pdf.rect(margin, yPosition, contentWidth, 8, "F");
+
+        xPosition = margin;
+
+        if (activeTab === "agent") {
+          pdf.text(
+            item.customer.substring(0, 15),
+            xPosition + 2,
+            yPosition + 5
+          );
+          xPosition += colWidths[0];
+          pdf.text(item.date, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[1];
+          pdf.text(item.amount, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[2];
+          pdf.text(item.commission, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[3];
+          pdf.setTextColor(
+            item.status === "Paid"
+              ? [0, 128, 0]
+              : item.status === "Pending"
+              ? [200, 100, 0]
+              : [0, 0, 200]
+          );
+          pdf.text(item.status, xPosition + 2, yPosition + 5);
+        } else if (reportType === "Agent Report") {
+          pdf.text(item.name.substring(0, 15), xPosition + 2, yPosition + 5);
+          xPosition += colWidths[0];
+          pdf.text(item.team, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[1];
+          pdf.text(item.salesCount.toString(), xPosition + 2, yPosition + 5);
+          xPosition += colWidths[2];
+          pdf.text(item.salesValue, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[3];
+          pdf.text(item.commission, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[4];
+          pdf.setTextColor(
+            item.status === "Paid"
+              ? [0, 128, 0]
+              : item.status === "Pending"
+              ? [200, 100, 0]
+              : [0, 0, 200]
+          );
+          pdf.text(item.status, xPosition + 2, yPosition + 5);
+        } else {
+          pdf.text(item.name.substring(0, 15), xPosition + 2, yPosition + 5);
+          xPosition += colWidths[0];
+          pdf.text(item.teamName, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[1];
+          pdf.text(item.teamSize, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[2];
+          pdf.text(item.teamSales, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[3];
+          pdf.text(item.leaderCommission, xPosition + 2, yPosition + 5);
+          xPosition += colWidths[4];
+          pdf.text(item.ranking, xPosition + 2, yPosition + 5);
+        }
+
+        pdf.setTextColor(0, 0, 0); // Reset color
+        yPosition += 8;
+      });
+
+      // Add footer
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, 290, {
+          align: "center",
+        });
+        pdf.text(
+          "Confidential - For Internal Use Only",
+          pageWidth - margin,
+          290,
+          { align: "right" }
+        );
+      }
+
+      // Save PDF
+      pdf.save(
+        `${activeTab}-performance-report-${
+          new Date().toISOString().split("T")[0]
+        }.pdf`
+      );
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again.");
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="w-full bg-gradient-to-r from-purple-400 to-purple-800 text-white px-6 py-4 flex justify-between items-center shadow-lg">
         <a href="/">
-          <img src="/logo.webp" alt="SuperbSite Logo" className="h-10 w-50 b" />
+          <div className="h-10 w-40 bg-white rounded-md flex items-center justify-center">
+            <span className="text-purple-800 font-bold text-xl">LOGO</span>
+          </div>
         </a>
       </header>
       <div className="my-6"></div>
@@ -612,7 +689,6 @@ export default function Dashboard() {
             }`}
             onClick={() => {
               setActiveTab("agent");
-              setDataLoaded(false);
             }}
           >
             Agent Portal
@@ -636,6 +712,17 @@ export default function Dashboard() {
           {/* Agent Portal Content */}
           {activeTab === "agent" && (
             <div>
+              {/* No filters for Agent Portal */}
+              <div className="flex space-x-4 mb-6">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-6 py-2 bg-purple-700 text-white rounded-lg shadow hover:bg-purple-800 transition-colors flex items-center ml-auto"
+                >
+                  + Add Sale
+                </button>
+              </div>
+
+              {/* Dashboard content */}
               <div ref={dashboardRef}>
                 {/* Metrics */}
                 <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -650,17 +737,23 @@ export default function Dashboard() {
                     <p>Total Commission</p>
                   </div>
                   <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
+                    <p className="text-2xl font-bold">{metrics.activeAgents}</p>
+                    <p>Active Agents</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
                     <p className="text-2xl font-bold">
                       {metrics.completedSales}
                     </p>
                     <p>Completed Sales</p>
                   </div>
                 </div>
+
                 {/* Charts */}
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div
                     ref={barChartRef}
                     className="bg-white p-6 rounded-xl shadow"
+                    style={{ backgroundColor: "#ffffff" }}
                   >
                     <h2 className="text-lg font-semibold mb-4 text-black">
                       📈 Sales Over Time
@@ -677,6 +770,7 @@ export default function Dashboard() {
                   <div
                     ref={pieChartRef}
                     className="bg-white p-6 rounded-xl shadow"
+                    style={{ backgroundColor: "#ffffff" }}
                   >
                     <h2 className="text-lg font-semibold mb-4 text-black">
                       💰 Commission Breakdown
@@ -700,6 +794,7 @@ export default function Dashboard() {
                     </ResponsiveContainer>
                   </div>
                 </div>
+
                 {/* Sales Table */}
                 <div className="bg-white p-6 rounded-xl shadow mb-6 text-black">
                   <h2 className="text-lg font-semibold mb-4">
@@ -737,8 +832,19 @@ export default function Dashboard() {
                           </td>
                         </tr>
                       ))}
+                      {mySales.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan="5"
+                            className="text-center p-4 text-gray-500"
+                          >
+                            No sales data available
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
+
                   {/* Download Button */}
                   <div className="mt-6 flex justify-center">
                     <button
@@ -758,14 +864,6 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-4 mb-6">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center bg-purple-700 text-white hover:bg-purple-800 ml-auto cursor-pointer`}
-                >
-                  + Add Sale
-                </button>
-              </div>
             </div>
           )}
 
@@ -774,34 +872,36 @@ export default function Dashboard() {
             <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 text-black">
               <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
                 <h2 className="text-xl font-semibold mb-4">Add Sale</h2>
-                {/* Form */}
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleAddSale}>
                   <div>
                     <label className="block text-sm font-medium">
                       Customer Name
                     </label>
                     <input
                       type="text"
+                      name="customer"
                       className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                      required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Amount</label>
                     <input
                       type="number"
+                      name="amount"
                       className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-black">
-                      Date
-                    </label>
+                    <label className="block text-sm font-medium">Date</label>
                     <input
                       type="date"
+                      name="date"
                       className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                      required
                     />
                   </div>
-                  {/* Buttons */}
                   <div className="flex justify-end space-x-3">
                     <button
                       type="button"
@@ -822,325 +922,337 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Dashboard content to export */}
-          {dataLoaded && (
-            <div ref={dashboardRef}>
-              {/* Metrics */}
-              <div className="grid md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
-                  <p className="text-2xl font-bold">{metrics.totalSales}</p>
-                  <p>Total Sales</p>
-                </div>
-                <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
-                  <p className="text-2xl font-bold">
-                    {metrics.totalCommission}
-                  </p>
-                  <p>Total Commission</p>
-                </div>
-                <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
-                  <p className="text-2xl font-bold">{metrics.activeAgents}</p>
-                  <p>Active Agents</p>
-                </div>
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
-                  <p className="text-2xl font-bold">{metrics.completedSales}</p>
-                  <p>Completed Sales</p>
-                </div>
-              </div>
-
-              {/* Charts */}
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div
-                  ref={barChartRef}
-                  className="bg-white p-6 rounded-xl shadow"
-                >
-                  <h2 className="text-lg font-semibold mb-4">
-                    🏆 Best Sales by Team
-                  </h2>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={teamPerformance}>
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#863E98" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div
-                  ref={pieChartRef}
-                  className="bg-white p-6 rounded-xl shadow"
-                >
-                  <h2 className="text-lg font-semibold mb-4">
-                    📍 Sales by Province
-                  </h2>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={provinceDistribution}
-                        dataKey="value"
-                        nameKey="name"
-                        outerRadius={100}
-                        label
-                      >
-                        {provinceDistribution.map((_, index) => (
-                          <Cell
-                            key={index}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Legend />
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Table */}
-              <div className="bg-white p-6 rounded-xl shadow mb-6 text-black  ">
-                <h2 className="text-lg font-semibold mb-4">
-                  🎯 Individual Agent Performance
-                </h2>
-                <table className="w-full border-collapse text-black">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="p-3 text-left">Agent</th>
-                      <th className="p-3 text-left">Team</th>
-                      <th className="p-3 text-left">Sales Count</th>
-                      <th className="p-3 text-left">Sales Value</th>
-                      <th className="p-3 text-left">Commission</th>
-                      <th className="p-3 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {agents.map((a, i) => (
-                      <tr key={i} className="border-b hover:bg-gray-50">
-                        <td className="p-3">{a.name}</td>
-                        <td className="p-3">{a.team}</td>
-                        <td className="p-3">{a.salesCount}</td>
-                        <td className="p-3">{a.salesValue}</td>
-                        <td className="p-3">{a.commission}</td>
-                        <td className="p-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              a.status === "Paid"
-                                ? "bg-green-100 text-green-700"
-                                : a.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-blue-100 text-blue-700"
-                            }`}
-                          >
-                            {a.status}
-                          </span>
-                        </td>
-                      </tr>
+          {/* Team Portal Content */}
+          {activeTab === "team" && (
+            <div>
+              {/* Filters for Team Portal */}
+              <div className="grid md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
+                <div>
+                  <label className="text-sm font-semibold">Report Type</label>
+                  <select
+                    value={reportType}
+                    onChange={(e) => setReportType(e.target.value)}
+                    className="w-full p-2 border rounded-lg mt-1"
+                  >
+                    {reportTypes.map((type) => (
+                      <option key={type}>{type}</option>
                     ))}
-                    {agents.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan="6"
-                          className="text-center p-4 text-gray-500"
-                        >
-                          No data available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-
-                {/* Download Button at the bottom of the table */}
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={downloadPDF}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center"
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">Team Leader</label>
+                  <select
+                    value={leader}
+                    onChange={(e) => setLeader(e.target.value)}
+                    className="w-full p-2 border rounded-lg mt-1"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                    </svg>
-                    Download Agent Report
-                  </button>
+                    <option value="">Select Leader</option>
+                    {leaders.map((l) => (
+                      <option key={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold">
+                    Performance Period
+                  </label>
+                  <select
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value)}
+                    className="w-full p-2 border rounded-lg mt-1"
+                  >
+                    <option value="">Select Period</option>
+                    {periods.map((per) => (
+                      <option key={per}>{per}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
 
-        {/* Team Portal Content */}
-        {activeTab === "team" && (
-          <div>
-            {/* Filters */}
-            <div className="grid md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow mb-6 text-black">
-              <div>
-                <label className="text-sm font-semibold">Team Leader</label>
-                <select
-                  value={leader}
-                  onChange={(e) => setLeader(e.target.value)}
-                  className="w-full p-2 border rounded-lg mt-1"
+              <div className="flex space-x-4 mb-6">
+                <button
+                  onClick={applyFilters}
+                  className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center ${
+                    canLoadData()
+                      ? "bg-purple-700 text-white hover:bg-purple-800"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                  disabled={!canLoadData()}
                 >
-                  <option value="">Select Leader</option>
-                  {leaders.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
+                  Apply Filters
+                </button>
               </div>
 
-              <div>
-                <label className="text-sm font-semibold">
-                  Performance Period
-                </label>
-                <select
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                  className="w-full p-2 border rounded-lg mt-1"
-                >
-                  <option value="">Select Period</option>
-                  {periods.map((per) => (
-                    <option key={per}>{per}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+              {/* Dashboard content - only show when data is loaded */}
+              {dataLoaded ? (
+                <div ref={dashboardRef}>
+                  {reportType === "Agent Report" ? (
+                    <>
+                      {/* Agent Report Content */}
+                      <div className="grid md:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {metrics.totalSales}
+                          </p>
+                          <p>Total Sales</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {metrics.totalCommission}
+                          </p>
+                          <p>Total Commission</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {metrics.activeAgents}
+                          </p>
+                          <p>Active Agents</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {metrics.completedSales}
+                          </p>
+                          <p>Completed Sales</p>
+                        </div>
+                      </div>
 
-            <div className="flex space-x-4 mb-6">
-              <button
-                onClick={applyFilters}
-                className={`px-6 py-2 rounded-lg shadow transition-colors flex items-center ${
-                  canLoadData()
-                    ? "bg-purple-700 text-white hover:bg-purple-800"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-                disabled={!canLoadData()}
-              >
-                Apply Filters
-              </button>
-            </div>
-
-            {/* Dashboard content to export */}
-            {dataLoaded && (
-              <div ref={dashboardRef}>
-                {/* Metrics */}
-                <div className="grid md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
-                    <p className="text-2xl font-bold">
-                      {teamMetrics.activeTeams}
-                    </p>
-                    <p>Active Teams</p>
-                  </div>
-                  <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
-                    <p className="text-2xl font-bold">
-                      {teamMetrics.leaderCommission}
-                    </p>
-                    <p>Leader Commission</p>
-                  </div>
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
-                    <p className="text-2xl font-bold">
-                      {teamMetrics.targetAchievement}
-                    </p>
-                    <p>Target Achievement</p>
-                  </div>
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
-                    <p className="text-2xl font-bold">
-                      {teamMetrics.teamSales}
-                    </p>
-                    <p>Team Sales</p>
-                  </div>
-                </div>
-
-                {/* Charts */}
-                <div className="grid md:grid-cols-2 gap-6 mb-6">
-                  <div
-                    ref={barChartRef}
-                    className="bg-white p-6 rounded-xl shadow"
-                  >
-                    <h2 className="text-lg font-semibold mb-4">
-                      📈 Team Performance Comparison
-                    </h2>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <BarChart data={teamPerformance}>
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#863E98" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  <div
-                    ref={pieChartRef}
-                    className="bg-white p-6 rounded-xl shadow"
-                  >
-                    <h2 className="text-lg font-semibold mb-4">
-                      💰 Commission Distribution
-                    </h2>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                        <Pie
-                          data={commissionDistribution}
-                          dataKey="value"
-                          nameKey="name"
-                          outerRadius={100}
-                          label
+                      {/* Charts */}
+                      <div className="grid md:grid-cols-2 gap-6 mb-6">
+                        <div
+                          ref={barChartRef}
+                          className="bg-white p-6 rounded-xl shadow"
+                          style={{ backgroundColor: "#ffffff" }}
                         >
-                          {commissionDistribution.map((_, index) => (
-                            <Cell
-                              key={index}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Legend />
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+                          <h2 className="text-lg font-semibold mb-4">
+                            🏆 Best Sales by Team
+                          </h2>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={teamPerformance}>
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#863E98" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div
+                          ref={pieChartRef}
+                          className="bg-white p-6 rounded-xl shadow"
+                          style={{ backgroundColor: "#ffffff" }}
+                        >
+                          <h2 className="text-lg font-semibold mb-4">
+                            📍 Sales by Province
+                          </h2>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                              <Pie
+                                data={provinceDistribution}
+                                dataKey="value"
+                                nameKey="name"
+                                outerRadius={100}
+                                label
+                              >
+                                {provinceDistribution.map((_, index) => (
+                                  <Cell
+                                    key={index}
+                                    fill={COLORS[index % COLORS.length]}
+                                  />
+                                ))}
+                              </Pie>
+                              <Legend />
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
 
-                {/* Table */}
-                <div className="bg-white p-6 rounded-xl shadow mb-6">
-                  <h2 className="text-lg font-semibold mb-4">
-                    👥 Team Leader Performance
-                  </h2>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="p-3 text-left">Team Leader</th>
-                        <th className="p-3 text-left">Team Name</th>
-                        <th className="p-3 text-left">Team Size</th>
-                        <th className="p-3 text-left">Team Sales</th>
-                        <th className="p-3 text-left">Leader Commission</th>
-                        <th className="p-3 text-left">Team Ranking</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {teamLeaders.map((leader, i) => (
-                        <tr key={i} className="border-b hover:bg-gray-50">
-                          <td className="p-3">{leader.name}</td>
-                          <td className="p-3">{leader.teamName}</td>
-                          <td className="p-3">{leader.teamSize}</td>
-                          <td className="p-3">{leader.teamSales}</td>
-                          <td className="p-3">{leader.leaderCommission}</td>
-                          <td className="p-3">{leader.ranking}</td>
-                        </tr>
-                      ))}
-                      {teamLeaders.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan="6"
-                            className="text-center p-4 text-gray-500"
-                          >
-                            No data available
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      {/* Table */}
+                      <div className="bg-white p-6 rounded-xl shadow mb-6 text-black">
+                        <h2 className="text-lg font-semibold mb-4">
+                          🎯 Individual Agent Performance
+                        </h2>
+                        <table className="w-full border-collapse text-black">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="p-3 text-left">Agent</th>
+                              <th className="p-3 text-left">Team</th>
+                              <th className="p-3 text-left">Sales Count</th>
+                              <th className="p-3 text-left">Sales Value</th>
+                              <th className="p-3 text-left">Commission</th>
+                              <th className="p-3 text-left">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {agents.map((a, i) => (
+                              <tr key={i} className="border-b hover:bg-gray-50">
+                                <td className="p-3">{a.name}</td>
+                                <td className="p-3">{a.team}</td>
+                                <td className="p-3">{a.salesCount}</td>
+                                <td className="p-3">{a.salesValue}</td>
+                                <td className="p-3">{a.commission}</td>
+                                <td className="p-3">
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                      a.status === "Paid"
+                                        ? "bg-green-100 text-green-700"
+                                        : a.status === "Pending"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : "bg-blue-100 text-blue-700"
+                                    }`}
+                                  >
+                                    {a.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                            {agents.length === 0 && (
+                              <tr>
+                                <td
+                                  colSpan="6"
+                                  className="text-center p-4 text-gray-500"
+                                >
+                                  No data available
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Team Report Content */}
+                      <div className="grid md:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {teamMetrics.activeTeams}
+                          </p>
+                          <p>Active Teams</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {teamMetrics.leaderCommission}
+                          </p>
+                          <p>Leader Commission</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {teamMetrics.targetAchievement}
+                          </p>
+                          <p>Target Achievement</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-xl shadow">
+                          <p className="text-2xl font-bold">
+                            {teamMetrics.teamSales}
+                          </p>
+                          <p>Team Sales</p>
+                        </div>
+                      </div>
 
-                  {/* Download Button at the bottom of the table */}
+                      {/* Charts */}
+                      <div className="grid md:grid-cols-2 gap-6 mb-6">
+                        <div
+                          ref={barChartRef}
+                          className="bg-white p-6 rounded-xl shadow"
+                          style={{ backgroundColor: "#ffffff" }}
+                        >
+                          <h2 className="text-lg font-semibold mb-4">
+                            📈 Team Performance Comparison
+                            <span className="text-xs block text-gray-500 mt-1">
+                              (Performance Score %)
+                            </span>
+                          </h2>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={teamPerformance}>
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#863E98" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div
+                          ref={pieChartRef}
+                          className="bg-white p-6 rounded-xl shadow"
+                          style={{ backgroundColor: "#ffffff" }}
+                        >
+                          <h2 className="text-lg font-semibold mb-4">
+                            💰 Commission Distribution
+                            <span className="text-xs block text-gray-500 mt-1">
+                              (% of Total Commission)
+                            </span>
+                          </h2>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                              <Pie
+                                data={commissionDistribution}
+                                dataKey="value"
+                                nameKey="name"
+                                outerRadius={100}
+                                label
+                              >
+                                {commissionDistribution.map((_, index) => (
+                                  <Cell
+                                    key={index}
+                                    fill={COLORS[index % COLORS.length]}
+                                  />
+                                ))}
+                              </Pie>
+                              <Legend />
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* Table */}
+                      <div className="bg-white p-6 rounded-xl shadow mb-6">
+                        <h2 className="text-lg font-semibold mb-4">
+                          👥 Team Leader Performance
+                        </h2>
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="p-3 text-left">Team Leader</th>
+                              <th className="p-3 text-left">Team Name</th>
+                              <th className="p-3 text-left">Team Size</th>
+                              <th className="p-3 text-left">Team Sales</th>
+                              <th className="p-3 text-left">
+                                Leader Commission
+                              </th>
+                              <th className="p-3 text-left">Team Ranking</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {teamLeaders.map((leader, i) => (
+                              <tr key={i} className="border-b hover:bg-gray-50">
+                                <td className="p-3">{leader.name}</td>
+                                <td className="p-3">{leader.teamName}</td>
+                                <td className="p-3">{leader.teamSize}</td>
+                                <td className="p-3">{leader.teamSales}</td>
+                                <td className="p-3">
+                                  {leader.leaderCommission}
+                                </td>
+                                <td className="p-3">{leader.ranking}</td>
+                              </tr>
+                            ))}
+                            {teamLeaders.length === 0 && (
+                              <tr>
+                                <td
+                                  colSpan="6"
+                                  className="text-center p-4 text-gray-500"
+                                >
+                                  No data available
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Download Button */}
                   <div className="mt-6 flex justify-center">
                     <button
                       onClick={downloadPDF}
@@ -1154,14 +1266,25 @@ export default function Dashboard() {
                         <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
                         <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
                       </svg>
-                      Download Team Report
+                      Download {reportType}
                     </button>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-xl">
+                  <div className="text-4xl mb-4">👥</div>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                    Select filters to view team report
+                  </h3>
+                  <p className="text-gray-500">
+                    Please select a team leader and period to generate the team
+                    report
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

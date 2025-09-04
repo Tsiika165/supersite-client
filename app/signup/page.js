@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios, { AxiosError } from "axios";
 
 export default function SignUp() {
   const [role, setRole] = useState("Agent");
@@ -21,30 +20,22 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  // Secret PINs (in a real app, these would be securely stored and validated server-side)
+  // Secret PINs (move to backend in production)
   const ADMIN_PIN = "1234"; // Example admin PIN
   const LEADER_PIN = "5678"; // Example team leader PIN
-  const [data, setData] = useState({
-    role: role,
-    email: email,
-    password: password,
-    name: `${firstName} ${lastName}`,
-  });
-  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    // Basic validation
+    // Client-side validation
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
-    // Validate PINs if needed
     if (role === "Admin" && adminPin !== ADMIN_PIN) {
       setError("Invalid Admin PIN");
       setIsLoading(false);
@@ -63,10 +54,9 @@ export default function SignUp() {
         return;
       }
     }
-    //NEEEEEEED TO CONNECT TO API AND PUSH TO DASHBAORD!!!!!!
 
     try {
-      // Send data to your API endpoint
+      // Send signup request to API
       const response = await fetch("http://localhost:3000/api/auth/signup", {
         method: "POST",
         headers: {
@@ -90,13 +80,26 @@ export default function SignUp() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
+        throw new Error(data.error || "Failed to sign up. Please try again.");
       }
 
-      // ✅ FIXED REDIRECT - Pass role and firstName to success page
-      router.push("/dashboard");
+      // Optional: Automatically log in the user after signup
+      // This assumes your backend returns a session token or user data
+      // If your backend doesn't handle auto-login, redirect to login page
+      if (data.token) {
+        // Store token in localStorage or cookies (adjust based on your auth setup)
+        localStorage.setItem("token", data.token);
+      }
+
+      // Redirect to signup success page with role and firstName as query parameters
+      router.push(
+        `/signup-success?role=${role}&firstName=${encodeURIComponent(
+          firstName
+        )}`
+      );
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "An unexpected error occurred");
+      console.error("Signup error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -107,10 +110,13 @@ export default function SignUp() {
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-400 to-purple-800 text-white py-3 px-6 w-full text-center p-5 border-b border-gray-300 bg-[#995da8]">
         <a href="/">
-          <img src="/logo.webp" alt="SuperbSite Logo" className="h-10 w-50 b" />
+          <img
+            src="/logo.webp"
+            alt="SuperbSite Logo"
+            className="h-10 w-50 mx-auto"
+          />
         </a>
-
-        <h1 className="text-4xl font-bold">Sales Agent Sign-Up</h1>
+        <h1 className="text-4xl font-bold mt-2">Sales Agent Sign-Up</h1>
       </div>
 
       {/* Content */}
@@ -157,7 +163,6 @@ export default function SignUp() {
             </p>
           </div>
 
-          {/* Admin PIN Field (only shown for Admin role) */}
           {role === "Admin" && (
             <div>
               <label className="block mb-1 font-medium">Admin PIN *</label>
@@ -175,7 +180,6 @@ export default function SignUp() {
             </div>
           )}
 
-          {/* Team Leader PIN and Team Name Fields (only shown for Team Leader role) */}
           {role === "Team Leader" && (
             <>
               <div>
